@@ -1,5 +1,7 @@
 import numpy as np
 
+
+# =============== MEAN SQUARED ERROR ===============
 def mse(y_pred, y_true):
     """
     Calculate the Mean Squared Error
@@ -43,6 +45,8 @@ def mse_with_grad(y_pred, y_true):
     grad_out = y_true - y_pred
     return loss, grad_out
 
+
+# =============== BINARY CROSS ENTROPY ===============
 
 def binary_cross_entropy(y_pred, y_true):
     """
