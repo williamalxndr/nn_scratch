@@ -1,10 +1,13 @@
 import numpy as np
+from base_layer import Layer
 
-class Linear:
+class Linear(Layer):
     def __init__(self, input_size, output_size, lr=0.01, verbose=False):
         """
         Initialize a linear neural network 
         """
+        super().__init__()
+
         self.input_size = input_size
         self.output_size = output_size
         self.lr = lr
@@ -35,7 +38,7 @@ class Linear:
         return z
 
 
-    def backward(self, grad_out):
+    def backward(self, grad_out) -> np.ndarray :
         """
         --- Input ---
         grad_out: gradient from the last layer
@@ -68,13 +71,11 @@ class Linear:
         self.w -= self.lr * self.dw
         self.b -= self.lr * self.db
 
-
         self.log(f"weights after: {self.w}")
         self.log(f"bias after: {self.b}")
 
-
-        self.dx = grad_out @ self.w
-        return self.dx
+        dx = grad_out @ self.w
+        return dx
 
 
 
