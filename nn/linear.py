@@ -1,10 +1,11 @@
 import numpy as np
-from base_layer import Layer
+from nn.base_class import Layer, Optimizer
+from optimizer import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=0.01, verbose=False):
+    def __init__(self, input_size, output_size, lr=0.01, optimizer=GradientDescent, verbose=False):
         """
-        Initialize a linear neural network 
+        Initialize a linear layer
         """
         super().__init__()
 
@@ -16,6 +17,10 @@ class Linear(Layer):
         # Weights and bias
         self.w = np.random.rand(output_size, input_size)
         self.b = np.random.rand(output_size)
+
+        # Weights and bias optimizer
+        self.w_optimizer = optimizer(lr)
+        self.b_optimizer = optimizer(lr)
 
 
         self.log(f"w: {self.w}")
@@ -68,15 +73,24 @@ class Linear(Layer):
         self.log(f"weights before: {self.w}")
         self.log(f"bias before: {self.b}")
 
-        self.w -= self.lr * self.dw
-        self.b -= self.lr * self.db
+        self._optimize()
 
         self.log(f"weights after: {self.w}")
         self.log(f"bias after: {self.b}")
 
         dx = grad_out @ self.w
         return dx
+    
+    def _optimize(self):
+        self.w = self.w_optimizer.optimize(self.dw)
+        self.b = self.b_optimizer.optimize(self.db)
 
+    def set_optimzer(self, optimizer):
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+
+        elif isinstance(optimizer, str):
+            self.optimizer = OptimizerBuilder.build(optimizer)
 
 
     ## --- Helper Methods ---
