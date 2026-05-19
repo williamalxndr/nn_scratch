@@ -19,8 +19,8 @@ class Linear(Layer):
         self.b = np.random.rand(output_size)
 
         # Weights and bias optimizer
-        self.w_optimizer = optimizer(lr)
-        self.b_optimizer = optimizer(lr)
+        self.w_optimizer = optimizer()
+        self.b_optimizer = optimizer()
 
 
         self.log(f"w: {self.w}")
@@ -70,20 +70,21 @@ class Linear(Layer):
         self.dw = np.outer(grad_out, self.x)
         self.db = grad_out
 
-        self.log(f"weights before: {self.w}")
-        self.log(f"bias before: {self.b}")
-
         self._optimize()
-
-        self.log(f"weights after: {self.w}")
-        self.log(f"bias after: {self.b}")
 
         dx = grad_out @ self.w
         return dx
     
     def _optimize(self):
-        self.w = self.w_optimizer.optimize(self.dw)
-        self.b = self.b_optimizer.optimize(self.db)
+        self.log(f"weights before: {self.w}")
+        self.log(f"bias before: {self.b}")
+
+        self.w = self.w_optimizer.optimize(self.w, self.dw)
+        self.b = self.b_optimizer.optimize(self.b, self.db)
+
+        self.log(f"weights after: {self.w}")
+        self.log(f"bias after: {self.b}")
+
 
     def set_optimzer(self, optimizer):
         if isinstance(optimizer, Optimizer):
@@ -93,15 +94,9 @@ class Linear(Layer):
             self.optimizer = OptimizerBuilder.build(optimizer)
 
 
-    ## --- Helper Methods ---
-    def log(self, message):
-        if self.verbose:
-            print(message)
-
-
 
 if __name__ == "__main__":
-    model_debug = Linear(3, 5, verbose=True)
+    model_debug = Linear(3, 5)
 
     x = np.random.randn(3)
 

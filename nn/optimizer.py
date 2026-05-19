@@ -8,9 +8,10 @@ class GradientDescent(Optimizer):
     def __init__(self, lr):
         super().__init__(lr)
 
-    def optimize(self, dtheta):
-        dtheta -= self.lr * dtheta
-        return dtheta
+    def optimize(self, theta, dtheta):
+        gt = dtheta
+        theta -= self.lr * gt
+        return theta
     
 
 class Momentum(Optimizer):
@@ -19,13 +20,13 @@ class Momentum(Optimizer):
         self.gamma = gamma
         self.vt = 0
 
-    def optimize(self, dtheta):
+    def optimize(self, theta, dtheta):
         gt = dtheta 
 
-        self.vt += self.gamma * self.vt + self.lr * gt
-        dtheta -= self.vt
+        self.vt = (self.gamma * self.vt) + (self.lr * gt)
+        theta -= self.vt
 
-        return dtheta
+        return theta
 
 
 class AdaGrad(Optimizer):
@@ -35,13 +36,13 @@ class AdaGrad(Optimizer):
         self.vt = 0
         
 
-    def optimize(self, dtheta):
+    def optimize(self, theta, dtheta):
         gt = dtheta
 
         self.vt += gt ** 2
-        dtheta -= (self.lr / (np.sqrt(self.vt) + self.epsilon)) * gt
+        theta -= (self.lr / (np.sqrt(self.vt) + self.epsilon)) * gt
 
-        return dtheta
+        return theta
         
 
 class RMSProp(Optimizer):
@@ -54,10 +55,10 @@ class RMSProp(Optimizer):
     def optimize(self, dtheta):
         gt = dtheta
 
-        self.vt = self.gamma * self.vt + (1-self.gamma) * (gt**2)
-        dtheta -= (self.lr / (np.sqrt(self.vt) + self.epsilon)) * gt
+        self.vt = (self.gamma * self.vt) + ((1-self.gamma) * (gt**2))
+        theta -= (self.lr / (np.sqrt(self.vt) + self.epsilon)) * gt
 
-        return dtheta
+        return theta
 
     
 class Adam(Optimizer):
@@ -70,7 +71,7 @@ class Adam(Optimizer):
         self.vt = 0
         self.t = 0
 
-    def optimize(self, dtheta):
+    def optimize(self, theta, dtheta):
         self.t += 1
 
         gt = dtheta
@@ -81,9 +82,9 @@ class Adam(Optimizer):
         mt_head = self.mt / (1 - (self.beta_1**self.t))
         vt_head = self.vt / (1 - (self.beta_2**self.t))
 
-        dtheta -= (self.lr / (np.sqrt(vt_head) + self.epsilon)) * mt_head
+        theta -= (self.lr / (np.sqrt(vt_head) + self.epsilon)) * mt_head
 
-        return dtheta
+        return theta
 
 
 class OptimizerBuilder:
