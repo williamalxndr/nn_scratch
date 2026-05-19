@@ -35,6 +35,8 @@ class Network:
         for layer in self.layers:
             out = layer(out)
 
+            self.log(f"Layer: {layer}, output: {out}")
+
         self.out = out
 
 
@@ -50,6 +52,6 @@ class Network:
             self.forward(x)
             self.backward(y)
             
-            
+
 if __name__ == "__main__":
     print("Hello world")

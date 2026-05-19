@@ -1,8 +1,8 @@
 import numpy as np
 
 class Layer:
-    def __init__(self):
-        pass
+    def __init__(self, verbose=True):
+        self.verbose=verbose
 
     def forward(self, x) -> np.ndarray: 
         """
@@ -22,13 +22,19 @@ class Layer:
     
     def __call__(self, x):
         return self.forward(x)
+    
+    def log(self, msg):
+        if self.verbose:
+            print(msg)
 
     
 class Optimizer:
-    def __init__(self, lr):
+    def __init__(self, lr, verbose=True):
         self.lr = lr
 
-    def optimize(self, dtheta):
+        self.verbose=verbose
+
+    def optimize(self, theta, dtheta):
         """
         Returns the update for theta
         For example,
@@ -37,3 +43,7 @@ class Optimizer:
         returns theta_t+1
         """
         raise NotImplementedError
+    
+    def log(self, msg):
+        if self.verbose:
+            print(msg)
