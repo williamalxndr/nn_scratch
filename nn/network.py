@@ -1,5 +1,5 @@
 import numpy as np
-from base_layer import Layer
+from nn.base_class import Layer
 from loss import *
 
 
@@ -33,7 +33,7 @@ class Network:
         out = x
 
         for layer in self.layers:
-            out = layer.forward(out)
+            out = layer(out)
 
         self.out = out
 
@@ -49,10 +49,7 @@ class Network:
         for _ in range(self.epoch):
             self.forward(x)
             self.backward(y)
-
-
-
-
+            
             
 if __name__ == "__main__":
     print("Hello world")
