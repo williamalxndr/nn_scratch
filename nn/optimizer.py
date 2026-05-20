@@ -3,13 +3,13 @@ import numpy as np
 from base_class import Optimizer
 
 
-
 class GradientDescent(Optimizer):
-    def __init__(self, lr):
+    def __init__(self, lr=0.01):
         super().__init__(lr)
 
     def optimize(self, theta, dtheta):
         gt = dtheta
+        print(f"dtheta: {dtheta}")
         theta -= self.lr * gt
         return theta
     

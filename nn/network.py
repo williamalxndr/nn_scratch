@@ -4,21 +4,21 @@ from loss import *
 
 
 class Network:
-    def __init__(self, *layers, loss, epoch):
+    def __init__(self, *layers, loss_type, epoch):
         self.layers = []
 
         # Add each layer to network
         for layer in layers:
             self.add_layer(layer)
 
-        if loss.lower() == "mse" or loss.lower() == "mean_squared_error":
-            self.loss_with_grad = mse_with_grad
-            self.loss = mse
+        LOSS_METHOD_DICT = {
+            "mse": mse,
+            "mean_squared_error": mse,
+            "bce": bce,
+            "binary_cross_entropy": bce
+        }
 
-        if loss.lower() == "bce" or loss.lower() == "binary_cross_entropy":
-            self.loss_with_grad = binary_cross_entropy_with_grad
-            self.loss = binary_cross_entropy
-
+        self.loss_method = LOSS_METHOD_DICT[self.loss_type]
         self.epoch = epoch
 
 
@@ -29,7 +29,11 @@ class Network:
         self.layers.append(layer)
 
 
-    def forward(self, x):
+    def forward(self, x: np.ndarray):
+        """
+        Forward pass through the network
+
+        """
         out = x
 
         for layer in self.layers:
@@ -40,17 +44,27 @@ class Network:
         self.out = out
 
 
-    def backward(self, y_pred):
-        _, grad = self.loss_with_grad(self.out, y_pred)
+    def backward(self, y_pred) -> Loss:
+        loss = self.loss_method(self.out, y_pred)
+        grad = loss.backward()
 
         for layer in self.layers:
             grad = layer.backward(grad)
 
+        return loss
+
     
-    def train(self, x, y):
+    def train(self, x: np.ndarray, y: np.ndarray):
+        """
+        Train the neural network for n epochs
+
+        """
         for _ in range(self.epoch):
             self.forward(x)
-            self.backward(y)
+            loss = self.backward(y)
+
+            self.log(f"Loss at epoch {_}: {loss}")
+
             
 
 if __name__ == "__main__":
