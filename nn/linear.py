@@ -134,7 +134,7 @@ class Linear(Layer):
             layer.set_optimizer(Adam)
         """
         if isinstance(optimizer, Optimizer):
-            self.optimizer = optimizer
+            self.optimizer = optimizer()
 
         elif isinstance(optimizer, str):
             self.optimizer = OptimizerBuilder.build(optimizer)

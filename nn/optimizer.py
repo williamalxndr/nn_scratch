@@ -9,7 +9,6 @@ class GradientDescent(Optimizer):
 
     def optimize(self, theta, dtheta):
         gt = dtheta
-        print(f"dtheta: {dtheta}")
         theta -= self.lr * gt
         return theta
     
