@@ -32,6 +32,9 @@ def mse(y_pred, y_true):
     --- Output --- 
     Returns Loss(loss_value, grad_out)
     """
+    if y_true.ndim == 1:
+        y_true = y_true.reshape(-1, 1)
+
     if y_pred.shape != y_true.shape:
         msg = f"\Shape mismatched! \
             y_pred 's shape: {y_pred.shape}, y_true's shape: {y_true.shape}"

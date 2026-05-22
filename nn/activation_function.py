@@ -3,8 +3,7 @@ from nn.base_class import Layer
 
 class Sigmoid(Layer):
     def __init__(self):
-        # TODO
-        pass
+        super().__init__()
 
     def forward(self, x):
         self.x = x
@@ -20,8 +19,7 @@ class Sigmoid(Layer):
 
 class ReLU(Layer):
     def __init__(self):
-        # TODO
-        pass
+        super().__init__
 
     def forward(self, x):
         self.x = x
@@ -34,8 +32,7 @@ class ReLU(Layer):
 
 class Softmax(Layer):
     def __init__(self):
-        # TODO
-        pass
+        super().__init__()
 
     def forward(self, x):
         sft = np.exp(x) / np.sum(np.exp(x))

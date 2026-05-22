@@ -1,8 +1,8 @@
 import numpy as np
-from base_class import Layer
-from loss import *
-from linear import Linear
-from optimizer import *
+from .base_class import Layer
+from .loss import *
+from .linear import Linear
+from .optimizer import *
 from argparse import ArgumentParser
 class Network:
     def __init__(self, *layers: Layer, loss_type: str, epoch: int, optimizer=Adam, verbose=True):
@@ -45,8 +45,15 @@ class Network:
         """
         out = x
 
+        batch_size = x.shape[1]
+
         for layer in self.layers:
             out = layer(out)
+
+            print(layer.output_size, batch_size)
+            print(out.shape)
+
+            assert out.shape == (layer.output_size, batch_size)
 
         self.out = out
 
@@ -66,18 +73,21 @@ class Network:
         Train the neural network for n epochs
 
         """
-        for _ in range(self.epoch):            
+        losses = []
+        for i in range(self.epoch):            
             self.forward(x)
             loss = self.backward(y)
 
-            self.log(f"Loss at epoch {_}: {loss.get_mean()}")
+            losses.append(loss.get_mean())
+
+            if i < 100:
+                self.log(f"Loss at epoch {i}: {loss.get_mean()}")
 
 
     def log(self, msg):
         if self.verbose:
             print(msg)
 
-    
 
             
 
@@ -88,15 +98,15 @@ if __name__ == "__main__":
     parser.add_argument("--epoch", type=int, default=10000)
     args = parser.parse_args()
     
-
-
-
     net = Network(Linear(3,5), Linear(5,2), Linear(2,output_size=args.output_size), loss_type="mse", epoch=args.epoch)
 
     net.set_optimizer(GradientDescent)
 
     x = np.random.randn(3, args.batch_size)
     y_true = np.random.randn(args.output_size, args.batch_size)
+
+    print(f"x: {x} \n")
+    print(f"y: {y_true}")
 
     net.train(x, y_true)
 

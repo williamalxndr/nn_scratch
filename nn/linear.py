@@ -1,7 +1,7 @@
 import numpy as np
-from base_class import Layer, Optimizer
-from optimizer import *
-from loss import *
+from .base_class import Layer, Optimizer
+from .optimizer import *
+from .loss import *
 
 class Linear(Layer):
     def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, verbose=False):
@@ -15,8 +15,8 @@ class Linear(Layer):
         self.lr = lr
 
         # Weights and bias
-        self.w = np.random.rand(output_size, input_size)
-        self.b = np.random.rand(output_size)
+        self.w = np.random.rand(output_size, input_size)    # Weights shape = output_size x input_size
+        self.b = np.random.rand(output_size, 1)                # Bias shape = output_size x 1
 
         # Weights and bias optimizer
         self.w_optimizer = optimizer()
@@ -27,14 +27,27 @@ class Linear(Layer):
         """
         Perform the forward pass: z = Wx + b.
 
+
         Args:
-            input: Input vector of shape (input_size,) or (batch_size, input_size).
+            input: Input vector of shape (input_size, batch_size).
 
         Returns:
-            Output vector of shape (output_size,) or (batch_size, output_size).
+            Output vector of shape (output_size, batch_size).
+
+        Notes:
+            W: (output_size, input_size)
+            x: (input_size, batch_size)
+            Wx dim: (output_size, batch_size)
+            Wx + b dim: (output_size, batch_size)
         """
         self.log("Forwarding...")
         self.log("\n")
+
+
+        if x.ndim == 1:
+            x = x.reshape(-1, 1)
+                    
+        print(f"w.shape: {self.w.shape}, x.shape: {x.shape}, b.shape: {self.b.shape}, ")
 
 
         self.x = x  # This is used later for backward
@@ -43,14 +56,16 @@ class Linear(Layer):
         self.log(f"x: {x}")
         self.log(f"b: {self.b}")
         
-        b = self.b
         if x.shape[1] > 1:
-            b = np.repeat(b.reshape(-1, 1), x.shape[1], axis=1)
+            self.b = np.repeat(self.b.reshape(-1, 1), x.shape[1], axis=1)
 
-        z = self.w @ x + b
+        print(f"self.w @ x .shape : {(self.w @ x).shape}")
+        print(f"self.b.shape: {self.b.shape}")
 
-        # self.log(f"z: {z}")
-        self.log(f"z.shape: {z.shape}")
+        z = (self.w @ x) + self.b
+
+        print(f"z.shape: {z.shape}")
+    
 
         self.log("Forwarding complete!")
         self.log("=================================")
@@ -144,8 +159,8 @@ class Linear(Layer):
 if __name__ == "__main__":
     model_debug = Linear(3, 5)
 
-    x = np.random.randn(3, 2)
-    y_true = np.random.randn(5, 2)
+    x = np.random.randn(3)
+    y_true = np.random.randn(5)
 
     y = model_debug.forward(x)
     loss = mse(y, y_true)
