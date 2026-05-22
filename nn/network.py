@@ -3,8 +3,7 @@ from base_class import Layer
 from loss import *
 from linear import Linear
 from optimizer import *
-
-
+from argparse import ArgumentParser
 class Network:
     def __init__(self, *layers: Layer, loss_type: str, epoch: int, optimizer=Adam, verbose=True):
         self.layers = []
@@ -83,15 +82,21 @@ class Network:
             
 
 if __name__ == "__main__":
-    OUTPUT_SIZE = 1
-    ROW = 5
-    EPOCH = 10000
-    net = Network(Linear(3,5), Linear(5,2), Linear(2,OUTPUT_SIZE), loss_type="mse", epoch=EPOCH)
+    parser = ArgumentParser()
+    parser.add_argument("--output_size", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=5)
+    parser.add_argument("--epoch", type=int, default=10000)
+    args = parser.parse_args()
+    
+
+
+
+    net = Network(Linear(3,5), Linear(5,2), Linear(2,output_size=args.output_size), loss_type="mse", epoch=args.epoch)
 
     net.set_optimizer(GradientDescent)
 
-    x = np.random.randn(3, ROW)
-    y_true = np.random.randn(OUTPUT_SIZE, ROW)
+    x = np.random.randn(3, args.batch_size)
+    y_true = np.random.randn(args.output_size, args.batch_size)
 
     net.train(x, y_true)
 
