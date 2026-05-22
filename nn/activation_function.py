@@ -30,7 +30,6 @@ class ReLU(Layer):
     def backward(self, grad_out):
         grad = 1 if self.x > 0 else 0
         return grad_out * grad
-    3
 
 
 class Softmax(Layer):

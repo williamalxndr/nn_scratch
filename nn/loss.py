@@ -2,18 +2,19 @@ import numpy as np
 
 
 class Loss:
-    def __init__(self, loss_value: int, grad: int):
-        self.loss_value = loss_value
+    def __init__(self, value: np.array, grad: np.array):
+        self.value = value
         self.grad = grad
 
     def __str__(self):
-        return str(self.loss_value)
-    
-    def __float__(self):
-        return self.loss_value
-    
+        return str(self.value)
+        
     def backward(self):
         return self.grad
+    
+    def get_mean(self):
+        return np.mean(self.value)
+
 
 
 # =============== MEAN SQUARED ERROR ===============

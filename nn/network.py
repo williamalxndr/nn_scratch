@@ -49,8 +49,6 @@ class Network:
         for layer in self.layers:
             out = layer(out)
 
-            # self.log(f"Layer: {layer}, output: {out}")
-
         self.out = out
 
 
@@ -69,11 +67,11 @@ class Network:
         Train the neural network for n epochs
 
         """
-        for _ in range(self.epoch):
+        for _ in range(self.epoch):            
             self.forward(x)
             loss = self.backward(y)
 
-            self.log(f"Loss at epoch {_}: {loss}")
+            self.log(f"Loss at epoch {_}: {loss.get_mean()}")
 
 
     def log(self, msg):
@@ -85,12 +83,12 @@ class Network:
             
 
 if __name__ == "__main__":
-    OUTPUT_SIZE = 4
-    ROW = 3
-    EPOCH = 1000
-    net = Network(Linear(3,5), Linear(5,2), Linear(2,OUTPUT_SIZE), loss_type="mse", epoch=1000)
+    OUTPUT_SIZE = 1
+    ROW = 5
+    EPOCH = 10000
+    net = Network(Linear(3,5), Linear(5,2), Linear(2,OUTPUT_SIZE), loss_type="mse", epoch=EPOCH)
 
-    net.set_optimizer(Adam)
+    net.set_optimizer(GradientDescent)
 
     x = np.random.randn(3, ROW)
     y_true = np.random.randn(OUTPUT_SIZE, ROW)

@@ -4,7 +4,7 @@ from optimizer import *
 from loss import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=0.01, optimizer=GradientDescent, verbose=False):
+    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, verbose=False):
         """
         Initialize a linear layer
         """
