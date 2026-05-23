@@ -4,7 +4,7 @@ from .optimizer import *
 from .loss import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent):
+    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, batch_size=4):
         """
         Initialize a linear layer
         """
@@ -22,6 +22,9 @@ class Linear(Layer):
         self.w_optimizer = optimizer()
         self.b_optimizer = optimizer()
 
+        # Training batch_size
+        self.batch_size = 4
+
 
     def forward(self, x: np.ndarray):
         """
@@ -33,18 +36,20 @@ class Linear(Layer):
 
         Returns:
             z: Output vector of shape (batch_size, output_size).
-
-        Notes:
-            W: (output_size, input_size)
-            x: (batch_size, input_size)
-            z dim: (batch_size, output_size)
         """
+
+        # Argument validation
+        if not isinstance(x, np.ndarray):
+            raise TypeError("x's type should np.ndarray")
+        
+        if x.shape[1] != self.input_size:
+            raise ValueError("x's shape should be (batch_size, input_size)")
 
         if x.ndim == 1:
             x = x.reshape(-1, 1)
                     
         self.x = x  # This is used later for backward
-        self.x_batch_size = x.shape[0]
+        self.batch_size = x.shape[0]
 
         if x.shape[1] > 1:
             print(f"self.b.shape: {self.b.shape}")
@@ -85,21 +90,24 @@ class Linear(Layer):
         self.log("Backwarding...")
         self.log("\n")
 
+        # Argument validation
         if not isinstance(grad_out, np.ndarray):
             raise TypeError("grad_out should be np.ndarray")
         
-        if grad_out.shape != (self.x_batch_size, self.output_size):
+        if grad_out.shape != (self.batch_size, self.output_size):
             raise ValueError("grad_out's shape is wrong!")
 
+        # Backwarding
         self.dw = grad_out.T @ self.x
         self.db = np.mean(grad_out, axis=0).reshape(-1, 1).T
 
-        # self._optimize()
+        self._optimize()
 
         dx = grad_out @ self.dw
 
         self.log("Backwarding complete!")
         self.log("=================================")
+        
         return dx
     
     def _optimize(self):
@@ -112,8 +120,8 @@ class Linear(Layer):
         self.log(f"weights before: {self.w}")
         self.log(f"bias before: {self.b}")
 
-        self.w = self.w_optimizer.optimize(self.w, self.dw)
-        self.b = self.b_optimizer.optimize(self.b, self.db)
+        self.w = self.w_optimizer.optimize(self.w, self.dw) # self.w shape: (output_size, input_size)
+        self.b = self.b_optimizer.optimize(self.b, self.db) # self.b shape: (1, output_size)
 
         self.log(f"weights after: {self.w}")
         self.log(f"bias after: {self.b}")
@@ -130,7 +138,11 @@ class Linear(Layer):
             optimizer: Optimizer class/instance (e.g. Adam, SGD) or a string
                     identifier (e.g. "adam", "sgd").
 
-        Example::
+        Modifies:
+            self.w_optimizer: Optimizer, set to be the desired optimizer
+            self.b_optimizer: Optimizer, set to be the desired optimizer
+
+        Example:
 
             # Using string
             layer = Linear(3, 5)
@@ -141,11 +153,14 @@ class Linear(Layer):
             layer = Linear(3, 5)
             layer.set_optimizer(Adam)
         """
+        builder = OptimizerBuilder()
         if isinstance(optimizer, Optimizer):
-            self.optimizer = optimizer()
+            self.w_optimizer = optimizer()
+            self.b_optimizer = optimizer()
 
         elif isinstance(optimizer, str):
-            self.optimizer = OptimizerBuilder.build(optimizer)
+            self.w_optimizer = builder.build(optimizer)
+            self.b_optimizer = builder.build(optimizer)
 
 
 

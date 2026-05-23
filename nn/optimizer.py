@@ -51,7 +51,7 @@ class RMSProp(Optimizer):
         self.epsilon = epsilon
         self.vt = 0
 
-    def optimize(self, dtheta):
+    def optimize(self, theta, dtheta):
         gt = dtheta
 
         self.vt = (self.gamma * self.vt) + ((1-self.gamma) * (gt**2))

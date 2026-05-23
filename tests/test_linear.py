@@ -118,3 +118,31 @@ def test_backward_shape(input_size, output_size, batch_size):
 
 def test_optimizer():
     pass
+
+@pytest.mark.parametrize("input_size", range(4, 9, 4))
+@pytest.mark.parametrize("output_size", range(1, 11, 5))
+@pytest.mark.parametrize("batch_size", range(50, 200, 50))
+@pytest.mark.parametrize("epochs", range(200, 1000, 400))
+@pytest.mark.parametrize("optimizer", ["Gradient Descent", "Momentum", "AdaGrad", "RMSProp", "Adam"])
+def test_linear_learning(input_size, output_size, batch_size, epochs, optimizer):
+    x = np.random.randn(batch_size, input_size)
+    y_true = np.random.randn(batch_size, output_size)
+
+    linear = Linear(input_size, output_size)
+    linear.set_optimizer(optimizer)
+
+    y_pred = linear.forward(x)
+    loss = mse(y_pred, y_true)
+
+    losses = []
+
+    for _ in range(epochs):
+        y_pred = linear.forward(x)
+        loss = mse(y_pred, y_true)
+        dl_dy = loss.backward()
+        linear.backward(dl_dy)
+
+        losses.append(loss.get_mean())
+
+    assert losses[-1] < losses[0]
+
