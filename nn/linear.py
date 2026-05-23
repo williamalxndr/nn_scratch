@@ -4,19 +4,19 @@ from .optimizer import *
 from .loss import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, verbose=False):
+    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent):
         """
         Initialize a linear layer
         """
-        super().__init__(False)
+        super().__init__(True)
 
         self.input_size = input_size
         self.output_size = output_size
         self.lr = lr
 
         # Weights and bias
-        self.w = np.random.rand(output_size, input_size)    # Weights shape = output_size x input_size
-        self.b = np.random.rand(output_size, 1)                # Bias shape = output_size x 1
+        self.w = np.random.rand(output_size, input_size)       # Weights shape = output_size x input_size
+        self.b = np.random.rand(1, output_size)                # Bias shape = 1 x output_size
 
         # Weights and bias optimizer
         self.w_optimizer = optimizer()
@@ -29,51 +29,30 @@ class Linear(Layer):
 
 
         Args:
-            input: Input vector of shape (input_size, batch_size).
+            x: Input vector of shape (batch_size, input_size).
 
         Returns:
-            Output vector of shape (output_size, batch_size).
+            z: Output vector of shape (batch_size, output_size).
 
         Notes:
             W: (output_size, input_size)
-            x: (input_size, batch_size)
-            Wx dim: (output_size, batch_size)
-            Wx + b dim: (output_size, batch_size)
+            x: (batch_size, input_size)
+            z dim: (batch_size, output_size)
         """
-        self.log("Forwarding...")
-        self.log("\n")
-
 
         if x.ndim == 1:
             x = x.reshape(-1, 1)
                     
-        print(f"w.shape: {self.w.shape}, x.shape: {x.shape}, b.shape: {self.b.shape}, ")
-
-
         self.x = x  # This is used later for backward
 
-        self.log(f"w: {self.w}")
-        self.log(f"x: {x}")
-        self.log(f"b: {self.b}")
-        
         if x.shape[1] > 1:
-            self.b = np.repeat(self.b.reshape(-1, 1), x.shape[1], axis=1)
+            print(f"self.b.shape: {self.b.shape}")
 
-        print(f"self.w @ x .shape : {(self.w @ x).shape}")
-        print(f"self.b.shape: {self.b.shape}")
-
-        z = (self.w @ x) + self.b
-
-        print(f"z.shape: {z.shape}")
-    
-
-        self.log("Forwarding complete!")
-        self.log("=================================")
-
+        z = (x @ self.w.T) + self.b
         return z
 
 
-    def backward(self, grad_out) -> np.ndarray :
+    def backward(self, grad_out: np.ndarray) -> np.ndarray :
         """
         Perform a backward pass through the linear layer.
 
@@ -82,11 +61,18 @@ class Linear(Layer):
 
         Args:
             grad_out: Gradient of the loss w.r.t. this layer's output (dL/dz),
-                    shape (output_size,) or (batch_size, output_size).
+                    np.ndarray with shape (output_size, batch_size).
 
         Returns:
             dL/dx: Gradient of the loss w.r.t. the input, to be passed to
-                the previous layer. Shape matches the input x.
+                the previous layer. 
+                np.ndarray with shape: (input_size, batch_size)
+        
+        Modifies:
+            self.dw: 
+                dL/dw, np.ndarray with shape: (output_size, input_size)
+            self.db: 
+                dL/db, np.ndarray with shape: (output_size, 1)
 
         Notes:
             Given z = Wx + b, gradients are derived as:
@@ -98,8 +84,10 @@ class Linear(Layer):
         self.log("Backwarding...")
         self.log("\n")
 
+        print(f"grad_out.shape: {grad_out.shape}")
+
         self.dw = grad_out @ self.x.T
-        self.db = np.mean(grad_out, axis=1)
+        self.db = np.mean(grad_out, axis=1).reshape(-1, 1)
 
         self._optimize()
 
