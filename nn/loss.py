@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Loss:
-    def __init__(self, value: np.array, grad: np.array):
+    def __init__(self, value: np.ndarray, grad: np.ndarray):
         self.value = value
         self.grad = grad
 
@@ -14,34 +14,42 @@ class Loss:
     
     def get_mean(self):
         return np.mean(self.value)
+    
+    def get_value(self):
+        return self.value
 
 
 
 # =============== MEAN SQUARED ERROR ===============
-def mse(y_pred, y_true):
+def mse(y_pred: np.ndarray, y_true: np.ndarray):
     """
-    Calculate the Mean Squared Error and gradient of the MSE loss
-    MSE = ||y_true - y_pred||^2
+    Calculate the Mean Squared Error
 
-    Used for backpropagation
+    Args:
+        y_pred: np.ndarray with shape (batch_size, output_size)
+        y_true: np.ndarray with shape (batch_size, output_size)
 
-    --- Input ---
-    y_pred: predicted value
-    y_true: target value
+    Returns:
+        Loss(loss_value, grad_out)
 
-    --- Output --- 
-    Returns Loss(loss_value, grad_out)
+    Methods of Loss:
+        def backward(self):  --> Returns the grad of loss w.r.t to y_pred
+            return self.grad  
+        
+        def get_mean(self):  --> Returns the mean of the MSE for each batch
+            return np.mean(self.value)  
+
+        def get_value(self):  --> Returns the loss of each batch in array with shape (batch_size, 1)
+            return self.value
     """
-    if y_true.ndim == 1:
-        y_true = y_true.reshape(-1, 1)
-
+    
     if y_pred.shape != y_true.shape:
         msg = f"\Shape mismatched! \
             y_pred 's shape: {y_pred.shape}, y_true's shape: {y_true.shape}"
         raise ValueError(msg)
 
-    loss_value = np.mean(((y_pred - y_true) ** 2), axis=0)
-    grad_out = 2/y_pred.shape[0] * (y_pred - y_true)
+    loss_value = np.mean(((y_pred - y_true) ** 2), axis=1).reshape(-1,1)
+    grad_out = 2/y_pred.shape[1] * (y_pred - y_true)
 
     return Loss(loss_value, grad_out)
 
