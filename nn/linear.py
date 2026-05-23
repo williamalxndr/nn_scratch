@@ -44,6 +44,7 @@ class Linear(Layer):
             x = x.reshape(-1, 1)
                     
         self.x = x  # This is used later for backward
+        self.x_batch_size = x.shape[0]
 
         if x.shape[1] > 1:
             print(f"self.b.shape: {self.b.shape}")
@@ -61,18 +62,18 @@ class Linear(Layer):
 
         Args:
             grad_out: Gradient of the loss w.r.t. this layer's output (dL/dz),
-                    np.ndarray with shape (output_size, batch_size).
+                    np.ndarray with shape (batch_size, output_size).
 
         Returns:
             dL/dx: Gradient of the loss w.r.t. the input, to be passed to
                 the previous layer. 
-                np.ndarray with shape: (input_size, batch_size)
+                np.ndarray with shape: (batch_size, input_size)
         
         Modifies:
             self.dw: 
                 dL/dw, np.ndarray with shape: (output_size, input_size)
             self.db: 
-                dL/db, np.ndarray with shape: (output_size, 1)
+                dL/db, np.ndarray with shape: (1, output_size)
 
         Notes:
             Given z = Wx + b, gradients are derived as:
@@ -84,14 +85,18 @@ class Linear(Layer):
         self.log("Backwarding...")
         self.log("\n")
 
-        print(f"grad_out.shape: {grad_out.shape}")
+        if not isinstance(grad_out, np.ndarray):
+            raise TypeError("grad_out should be np.ndarray")
+        
+        if grad_out.shape != (self.x_batch_size, self.output_size):
+            raise ValueError("grad_out's shape is wrong!")
 
-        self.dw = grad_out @ self.x.T
-        self.db = np.mean(grad_out, axis=1).reshape(-1, 1)
+        self.dw = grad_out.T @ self.x
+        self.db = np.mean(grad_out, axis=0).reshape(-1, 1).T
 
-        self._optimize()
+        # self._optimize()
 
-        dx = self.w.T @ grad_out
+        dx = grad_out @ self.dw
 
         self.log("Backwarding complete!")
         self.log("=================================")
@@ -147,8 +152,8 @@ class Linear(Layer):
 if __name__ == "__main__":
     model_debug = Linear(3, 5)
 
-    x = np.random.randn(3)
-    y_true = np.random.randn(5)
+    x = np.random.randn(1, 3)
+    y_true = np.random.randn(1, 5)
 
     y = model_debug.forward(x)
     loss = mse(y, y_true)

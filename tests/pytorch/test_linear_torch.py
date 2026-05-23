@@ -19,7 +19,6 @@ def test_linear_output(input_size, output_size, batch_size):
     linear.w = linear_torch.weight.detach().numpy()
     linear.b = linear_torch.bias.detach().numpy()
 
-
     y = linear.forward(x)
     y_torch = linear_torch.forward(x_torch).detach().numpy() 
 
