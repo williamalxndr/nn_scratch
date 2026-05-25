@@ -3,6 +3,13 @@ import numpy as np
 
 class Loss:
     def __init__(self, value: np.ndarray, grad: np.ndarray):
+        """
+        Initiate loss object.
+
+        Args:
+            value: loss values, np.ndarray with shape (batch_size, output_size)
+            grad: dL/dy, np.ndarray with shape (batch_size, output_size)
+        """
         self.value = value
         self.grad = grad
 

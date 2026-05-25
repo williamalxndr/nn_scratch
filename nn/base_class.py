@@ -1,12 +1,12 @@
 import numpy as np
 
 class Layer:
-    def __init__(self, verbose=True):
+    def __init__(self, verbose=False):
         self.verbose=verbose
 
     def forward(self, x) -> np.ndarray: 
         """
-        Returns layer(x)
+        Returns the output of the layer
 
         Example usage:
         from linear import Linear
@@ -23,13 +23,15 @@ class Layer:
     def __call__(self, x):
         return self.forward(x)
     
-    def log(self, msg):
+    def log(self, msg, force=False):
         if self.verbose:
+            print(msg)
+        elif force:
             print(msg)
 
     
 class Optimizer:
-    def __init__(self, lr, verbose=True):
+    def __init__(self, lr, verbose=False):
         self.lr = lr
 
         self.verbose=verbose
@@ -44,6 +46,8 @@ class Optimizer:
         """
         raise NotImplementedError
     
-    def log(self, msg):
+    def log(self, msg, force=False):
         if self.verbose:
+            print(msg)
+        elif force:
             print(msg)

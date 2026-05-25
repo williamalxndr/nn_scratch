@@ -4,11 +4,11 @@ from .optimizer import *
 from .loss import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, batch_size=4):
+    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent):
         """
         Initialize a linear layer
         """
-        super().__init__(True)
+        super().__init__(False)
 
         self.input_size = input_size
         self.output_size = output_size
@@ -22,8 +22,8 @@ class Linear(Layer):
         self.w_optimizer = optimizer()
         self.b_optimizer = optimizer()
 
-        # Training batch_size
-        self.batch_size = 4
+        # Batch size training
+        self.batch_size = None
 
 
     def forward(self, x: np.ndarray):
@@ -49,10 +49,9 @@ class Linear(Layer):
             x = x.reshape(-1, 1)
                     
         self.x = x  # This is used later for backward
-        self.batch_size = x.shape[0]
 
-        if x.shape[1] > 1:
-            print(f"self.b.shape: {self.b.shape}")
+        if self.batch_size is not None and self.x.shape[0] != self.batch_size:
+            raise ValueError(f"Batch size must be {self.batch_size}")
 
         z = (x @ self.w.T) + self.b
         return z
@@ -94,8 +93,9 @@ class Linear(Layer):
         if not isinstance(grad_out, np.ndarray):
             raise TypeError("grad_out should be np.ndarray")
         
-        if grad_out.shape != (self.batch_size, self.output_size):
-            raise ValueError("grad_out's shape is wrong!")
+        if self.batch_size is not None and grad_out.shape != (self.batch_size, self.output_size):
+            err_msg = f"grad_out's shape is wrong. Should be ({self.batch_size, self.output_size}), instead ({grad_out.shape})"
+            raise ValueError(err_msg)
 
         # Backwarding
         self.dw = grad_out.T @ self.x
@@ -117,14 +117,8 @@ class Linear(Layer):
         self.log("Optimizing...")
         self.log("\n")
 
-        self.log(f"weights before: {self.w}")
-        self.log(f"bias before: {self.b}")
-
         self.w = self.w_optimizer.optimize(self.w, self.dw) # self.w shape: (output_size, input_size)
         self.b = self.b_optimizer.optimize(self.b, self.db) # self.b shape: (1, output_size)
-
-        self.log(f"weights after: {self.w}")
-        self.log(f"bias after: {self.b}")
 
         self.log("Optimizing complete!")
         self.log("=================================")
@@ -161,6 +155,10 @@ class Linear(Layer):
         elif isinstance(optimizer, str):
             self.w_optimizer = builder.build(optimizer)
             self.b_optimizer = builder.build(optimizer)
+
+    def set_batch_size(self, batch_size):
+        self.batch_size = batch_size
+
 
 
 

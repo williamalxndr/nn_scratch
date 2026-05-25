@@ -4,8 +4,11 @@ from .loss import *
 from .linear import Linear
 from .optimizer import *
 from argparse import ArgumentParser
-class Network:
-    def __init__(self, *layers: Layer, loss_type: str, epoch: int, optimizer=Adam, verbose=True):
+
+
+class Network(Layer):
+    def __init__(self, *layers: Layer, loss_type: str, epochs: int, optimizer=Adam, training_batch_size=1):
+        super().__init__(False)
         self.layers = []
 
         # Add each layer to network
@@ -22,8 +25,8 @@ class Network:
         }
 
         self.loss_method = LOSS_METHOD_DICT[loss_type]
-        self.epoch = epoch
-        self.verbose=verbose
+        self.epochs = epochs
+        self.training_batch_size = training_batch_size
 
 
     def set_optimizer(self, optimizer):
@@ -35,30 +38,33 @@ class Network:
         """
         Add layer to the last position in network
         """
+        if not isinstance(layer, Layer):
+            raise ValueError("layer must be Layer object")
+        
         self.layers.append(layer)
 
 
     def forward(self, x: np.ndarray):
         """
-        Forward pass through the network
+        Performing forward pass through the layers in the network
 
+        Args:
+            x: input array, np.ndarray with shape (batch_size, input_size)
+
+        Returns:
+            y: output array, np.ndarray with shape (batch_size, output_size) 
         """
         out = x
-
-        batch_size = x.shape[1]
 
         for layer in self.layers:
             out = layer(out)
 
-            print(layer.output_size, batch_size)
-            print(out.shape)
-
-            assert out.shape == (layer.output_size, batch_size)
-
         self.out = out
 
+        return self.out
 
-    def backward(self, y_true) -> Loss:
+
+    def backward(self, y_true: np.ndarray) -> Loss:
         loss = self.loss_method(self.out, y_true)
         grad = loss.backward()
 
@@ -71,42 +77,66 @@ class Network:
     def train(self, x: np.ndarray, y: np.ndarray):
         """
         Train the neural network for n epochs
+        Args:
+            x: training data, np.ndarray with shape (batch_size, input_size)
+            y: target data, np.ndarray with shape (batch_size, output_size)
+
+        Returns:
+            losses: Losses of the training process, np.ndarray with shape (batch_size, )
 
         """
         losses = []
-        for i in range(self.epoch):            
-            self.forward(x)
-            loss = self.backward(y)
+        
+        if x.shape[0] != y.shape[0]:
+            raise ValueError("Batch size mismatched!")
+        
+        row = x.shape[0]
+
+        for i in range(self.epochs): 
+            # Set batch training data
+            batch_idx = np.random.choice(np.arange(row, dtype=np.int32), size=self.training_batch_size, replace=False)
+            x_batch = x[batch_idx]
+            y_batch = y[batch_idx]
+
+            print(x.shape[0])
+
+            self.log(f"Batch_idx: {batch_idx}", force=True)
+
+            self.log(f"x: {x}")
+            self.log(f"y: {y}")
+
+            self.log(f"x_batch: {x_batch}", force=True)  
+            self.log(f"y_batch: {y_batch}", force=True)
+
+            self.forward(x_batch)
+            loss = self.backward(y_batch)
 
             losses.append(loss.get_mean())
 
-            if i < 100:
-                self.log(f"Loss at epoch {i}: {loss.get_mean()}")
+            if i % 100:
+                self.log(f"Loss at epoch {i}: {loss.get_mean()}", force=True)
 
+        return losses
 
-    def log(self, msg):
-        if self.verbose:
-            print(msg)
 
 
             
-
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--output_size", type=int, default=2)
-    parser.add_argument("--batch_size", type=int, default=5)
-    parser.add_argument("--epoch", type=int, default=10000)
+    parser.add_argument("--batch_size", type=int, default=100)
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--input-size", type=int, default=3)
+    parser.add_argument("--training_batch_size", type=int, default=2)
+    parser.add_argument("--optimizer", type=str, default="Adam")
     args = parser.parse_args()
     
-    net = Network(Linear(3,5), Linear(5,2), Linear(2,output_size=args.output_size), loss_type="mse", epoch=args.epoch)
+    net = Network(Linear(args.input_size,5), Linear(5,2), Linear(2,output_size=args.output_size), loss_type="mse", epochs=args.epochs, training_batch_size=args.training_batch_size)
 
-    net.set_optimizer(GradientDescent)
+    net.set_optimizer(args.optimizer)
 
-    x = np.random.randn(3, args.batch_size)
-    y_true = np.random.randn(args.output_size, args.batch_size)
-
-    print(f"x: {x} \n")
-    print(f"y: {y_true}")
+    x = np.random.randn(args.batch_size, args.input_size)
+    y_true = np.random.randn(args.batch_size, args.output_size)
 
     net.train(x, y_true)
 
