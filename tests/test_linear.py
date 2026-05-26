@@ -128,7 +128,7 @@ def test_linear_learning(input_size, output_size, batch_size, epochs, optimizer)
     x = np.random.randn(batch_size, input_size)
     y_true = np.random.randn(batch_size, output_size)
 
-    linear = Linear(input_size, output_size)
+    linear = Linear(input_size, output_size, init="xavier")
     linear.set_optimizer(optimizer)
 
     y_pred = linear.forward(x)

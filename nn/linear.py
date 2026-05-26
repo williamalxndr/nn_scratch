@@ -4,7 +4,7 @@ from .optimizer import *
 from .loss import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent):
+    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, init="random"):
         """
         Initialize a linear layer
         """
@@ -15,8 +15,15 @@ class Linear(Layer):
         self.lr = lr
 
         # Weights and bias
-        self.w = np.random.rand(output_size, input_size)       # Weights shape = output_size x input_size
-        self.b = np.random.rand(1, output_size)                # Bias shape = 1 x output_size
+        if init == "xavier":
+            self._xavier_init()
+        elif init == "he":
+            self._he_init()
+        elif init == "random":
+            self.w = np.random.rand(output_size, input_size)          # Weights shape = output_size x input_size
+            self.b = np.random.randn(1, output_size)                  # Bias shape = 1 x output_size
+        else:
+            raise ValueError("unknown initializer")
 
         # Weights and bias optimizer
         self.w_optimizer = optimizer()
@@ -24,6 +31,33 @@ class Linear(Layer):
 
         # Batch size training
         self.batch_size = None
+
+    def _xavier_init(self, dist="uniform"):
+        if dist == "uniform":
+            num = np.sqrt(6/(self.input_size+self.output_size))
+            self.w = np.random.uniform(-num, num, (self.output_size, self.input_size))
+            self.b = np.zeros((1, self.output_size))
+        elif dist == "normal":
+            num = np.sqrt(2/(self.input_size, self.output_size))
+            self.w = np.random.normal(0, num, size=(self.output_size, self.input_size))
+            self.b = np.zeros((1, self.output_size))
+
+
+    def _he_init(self, dist="uniform"):
+        var_w = np.sqrt(2/self.input_size)
+        if dist == "uniform": 
+            bound = np.sqrt(6/self.input_size)
+            self.w = np.random.uniform(-bound, bound, (self.output_size, self.input_size))
+        elif dist == "normal":
+            self.w = np.random.normal(0, var_w, (self.output_size, self.input_size))
+        self.b = np.zeros((1, self.output_size))
+
+    def _clip_grad_norm(self, g:np.ndarray, max_norm=1):
+        norm = np.sum(np.square(g))
+        g = g * norm
+        return g
+    
+
 
 
     def forward(self, x: np.ndarray):
@@ -100,6 +134,10 @@ class Linear(Layer):
         # Backwarding
         self.dw = grad_out.T @ self.x
         self.db = np.mean(grad_out, axis=0).reshape(-1, 1).T
+
+        # Gradient clipping
+        self.dw = self._clip_grad_norm(self.dw)
+        self.db = self._clip_grad_norm(self.db)
 
         self._optimize()
 

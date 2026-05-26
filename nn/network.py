@@ -68,8 +68,15 @@ class Network(Layer):
         loss = self.loss_method(self.out, y_true)
         grad = loss.backward()
 
-        for layer in reversed(self.layers):
+        for layer in reversed(self.layers):            
             grad = layer.backward(grad)
+
+            # Check vanishing/exploding gradient
+            if grad > 1e10:
+                self.log("Gradient explodes", True)
+            elif grad < 1e-10:
+                self.log("Gradient vanishes", True)
+
 
         return loss
 
