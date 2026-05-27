@@ -29,7 +29,7 @@ class Momentum(Optimizer):
 
 
 class AdaGrad(Optimizer):
-    def __init__(self, lr=0.01, epsilon=1e-4):
+    def __init__(self, lr=0.5, epsilon=1e-4):
         super().__init__(lr)
         self.epsilon = epsilon
         self.vt = 0
@@ -45,7 +45,7 @@ class AdaGrad(Optimizer):
         
 
 class RMSProp(Optimizer):
-    def __init__(self, lr=1e-2, gamma=1e-3, epsilon=1e-4):
+    def __init__(self, lr=0.01, gamma=0.99, epsilon=1e-8):
         super().__init__(lr)
         self.gamma = gamma
         self.epsilon = epsilon
@@ -61,7 +61,7 @@ class RMSProp(Optimizer):
 
     
 class Adam(Optimizer):
-    def __init__(self, lr=1e-2, epsilon=1e-4, beta_1=1e-3, beta_2=1e-3):
+    def __init__(self, lr=0.5, epsilon=1e-8, beta_1=0.9, beta_2=0.999):
         super().__init__(lr)
         self.epsilon = epsilon
         self.beta_1 = beta_1
