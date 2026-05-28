@@ -8,7 +8,7 @@ class Linear(Layer):
         """
         Initialize a linear layer
         """
-        super().__init__(False)
+        super().__init__(input_size=None, output_size=None, verbose=False)
 
         self.input_size = input_size
         self.output_size = output_size
@@ -57,8 +57,6 @@ class Linear(Layer):
         g = g * norm
         return g
     
-
-
 
     def forward(self, x: np.ndarray):
         """
@@ -131,13 +129,15 @@ class Linear(Layer):
             err_msg = f"grad_out's shape is wrong. Should be ({self.batch_size, self.output_size}), instead ({grad_out.shape})"
             raise ValueError(err_msg)
 
-        # Backwarding
+        # Backwarding, computing gradient
+        # dL/dw = dL/dz * dz/dw
         self.dw = grad_out.T @ self.x
         self.db = np.mean(grad_out, axis=0).reshape(-1, 1).T
 
         # Gradient clipping
-        self.dw = self._clip_grad_norm(self.dw)
-        self.db = self._clip_grad_norm(self.db)
+        if not isinstance(self.w_optimizer, (GradientDescent, Momentum)) and not isinstance(self.b_optimizer, (GradientDescent, Momentum)):
+            self.dw = self._clip_grad_norm(self.dw)
+            self.db = self._clip_grad_norm(self.db)
 
         self._optimize()
 
@@ -205,6 +205,8 @@ if __name__ == "__main__":
 
     x = np.random.randn(1, 3)
     y_true = np.random.randn(1, 5)
+
+    optimizer = "Gradient descent"
 
     y = model_debug.forward(x)
     loss = mse(y, y_true)

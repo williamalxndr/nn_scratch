@@ -17,13 +17,25 @@ class Loss:
         return str(self.value)
         
     def backward(self):
+        """
+        Returns grad of the loss w.r.t the predicted output.
+        dL/dy
+        """
         return self.grad
     
     def get_mean(self):
+        """
+        Returns the mean of the loss.
+
+        """
         return np.mean(self.value)
     
     def get_value(self):
+        """
+        Returns the loss of each data in the predicted
+        """
         return self.value
+    
 
 
 

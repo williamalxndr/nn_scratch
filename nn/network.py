@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 
 class Network(Layer):
     def __init__(self, *layers: Layer, loss_type: str, epochs: int, optimizer=Adam, training_batch_size=1):
-        super().__init__(False)
+        super().__init__(input_size=None, output_size=None, verbose=False)
         self.layers = []
 
         # Add each layer to network
@@ -72,9 +72,9 @@ class Network(Layer):
             grad = layer.backward(grad)
 
             # Check vanishing/exploding gradient
-            if grad > 1e10:
+            if np.any(grad> 1e10):
                 self.log("Gradient explodes", True)
-            elif grad < 1e-10:
+            elif np.any(grad < 1e-10):
                 self.log("Gradient vanishes", True)
 
 

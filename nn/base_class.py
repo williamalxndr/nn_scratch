@@ -1,23 +1,33 @@
 import numpy as np
 
 class Layer:
-    def __init__(self, verbose=False):
+    def __init__(self, input_size, output_size, verbose=False):
+        self.input_size = input_size
+        self.output_size = output_size
         self.verbose=verbose
 
-    def forward(self, x) -> np.ndarray: 
+    def forward(self, x: np.ndarray) -> np.ndarray: 
         """
         Returns the output of the layer
 
-        Example usage:
-        from linear import Linear
-        net = Linear(3, 5)
-        x = np.random.randn(3)
-
-        net.forward(x) 
+        Args:
+            x: the input data to be forwarded
+                np.ndarray with shape (batch_size, input_size)
+        Returns:
+            y: the output data that gets forwarded
+                np.ndarray with shape (batch_size, output_size)
         """
         raise NotImplementedError
     
-    def backward(self, x) -> np.ndarray: 
+    def backward(self, grad_out: np.ndarray) -> np.ndarray: 
+        """
+        Perform backward
+        Args: 
+            grad_out: The gradient of the loss w.r.t the output of this layer. dL/dy
+                np.ndarray with shape (batch_size, output_size)
+        Returns:
+            grad: The gradient of the loss w.r.t the input of this layer (x). dL/dx
+        """
         raise NotImplementedError
     
     def __call__(self, x):
