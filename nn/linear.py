@@ -4,7 +4,7 @@ from .optimizer import *
 from .loss import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, init="random"):
+    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, init="xavier"):
         """
         Initialize a linear layer
         """
@@ -53,8 +53,9 @@ class Linear(Layer):
         self.b = np.zeros((1, self.output_size))
 
     def _clip_grad_norm(self, g:np.ndarray, max_norm=1):
-        norm = np.sum(np.square(g))
-        g = g * norm
+        norm = np.sqrt(np.sum(np.square(g)))
+        if norm > max_norm:
+            g = g * (max_norm / norm)
         return g
     
 
@@ -135,13 +136,12 @@ class Linear(Layer):
         self.db = np.mean(grad_out, axis=0).reshape(-1, 1).T
 
         # Gradient clipping
-        if not isinstance(self.w_optimizer, (GradientDescent, Momentum)) and not isinstance(self.b_optimizer, (GradientDescent, Momentum)):
-            self.dw = self._clip_grad_norm(self.dw)
-            self.db = self._clip_grad_norm(self.db)
+        self.dw = self._clip_grad_norm(self.dw)
+        self.db = self._clip_grad_norm(self.db)
 
         self._optimize()
 
-        dx = grad_out @ self.dw
+        dx = grad_out @ self.w
 
         self.log("Backwarding complete!")
         self.log("=================================")
