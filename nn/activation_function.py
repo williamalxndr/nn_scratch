@@ -1,5 +1,5 @@
 import numpy as np
-from nn.base_class import Layer
+from nn import Layer
 
 class ActivationFunction(Layer):
     def __init__(self, size):
@@ -84,7 +84,7 @@ class Softmax(ActivationFunction):
         return sft
     
     def backward(self, grad_out):
-        # TODO
+        # TODO: Implement
         pass
         
 class ActivationFunctionBuilder:

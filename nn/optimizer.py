@@ -1,13 +1,13 @@
 import numpy as np
 
-from .base_class import Optimizer
+from nn import Optimizer
 
 
 class GradientDescent(Optimizer):
     def __init__(self, lr=0.01):
         super().__init__(lr)
 
-    def optimize(self, theta, dtheta):
+    def step(self, theta, dtheta):
         gt = dtheta
         theta -= self.lr * gt
         return theta
@@ -19,7 +19,7 @@ class Momentum(Optimizer):
         self.gamma = gamma
         self.vt = 0
 
-    def optimize(self, theta, dtheta):
+    def step(self, theta, dtheta):
         gt = dtheta 
 
         self.vt = (self.gamma * self.vt) + (self.lr * gt)
@@ -35,7 +35,7 @@ class AdaGrad(Optimizer):
         self.vt = 0
         
 
-    def optimize(self, theta, dtheta):
+    def step(self, theta, dtheta):
         gt = dtheta
 
         self.vt += gt ** 2
@@ -51,7 +51,7 @@ class RMSProp(Optimizer):
         self.epsilon = epsilon
         self.vt = 0
 
-    def optimize(self, theta, dtheta):
+    def step(self, theta, dtheta):
         gt = dtheta
 
         self.vt = (self.gamma * self.vt) + ((1-self.gamma) * (gt**2))
@@ -70,7 +70,7 @@ class Adam(Optimizer):
         self.vt = 0
         self.t = 0
 
-    def optimize(self, theta, dtheta):
+    def step(self, theta, dtheta):
         self.t += 1
 
         gt = dtheta

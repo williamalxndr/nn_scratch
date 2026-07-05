@@ -1,8 +1,8 @@
 import numpy as np
-from .base_class import Layer
-from .loss import *
-from .linear import Linear
-from .optimizer import *
+from nn import Layer
+from nn.loss import *
+from nn.linear import Linear
+from nn.optimizer import *
 from argparse import ArgumentParser
 
 

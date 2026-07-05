@@ -1,7 +1,7 @@
 import numpy as np
-from .base_class import Layer, Optimizer
-from .optimizer import *
-from .loss import *
+from nn import Layer, Optimizer
+from nn.loss import *
+from nn.optimizer import *
 
 class Linear(Layer):
     def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, init="xavier"):
@@ -26,6 +26,7 @@ class Linear(Layer):
             raise ValueError("unknown initializer")
 
         # Weights and bias optimizer
+        # TODO [REFACTOR]: Refactor optimizer so it can optimize
         self.w_optimizer = optimizer()
         self.b_optimizer = optimizer()
 
