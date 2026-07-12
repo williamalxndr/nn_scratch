@@ -56,11 +56,11 @@ class Linear(Layer):
         if not isinstance(x, np.ndarray):
             raise TypeError("x's type should np.ndarray")
         
-        if x.shape[1] != self.input_size:
-            raise ValueError("x's shape should be (batch_size, input_size)")
-
         if x.ndim == 1:
             x = x.reshape(-1, 1)
+            
+        if x.shape[1] != self.input_size:
+            raise ValueError("x's shape should be (batch_size, input_size)")
                     
         self.x = x  # This is used later for backward
 
@@ -158,19 +158,23 @@ class Linear(Layer):
 
 
 
-
-
 if __name__ == "__main__":
-    model = Linear(3, 5)
+    model = Linear(1, 1)
 
-    x = np.random.randn(1, 3)
-    y_true = np.random.randn(1, 5)
-
+    x = np.random.randn(500)
+    y_true = (3 * x + 5 + 0.2 * np.random.randn(500)).reshape(-1,1)
+        
     optimizer = Adam(model)
 
-    y = model.forward(x)
-    
-    
+    for _ in range(200):
+        y_pred = model.forward(x)
+        loss = mse(y_pred, y_true)
+        model.backward(loss.backward())
+        optimizer.step()
+        
+        print(f"loss : {loss.get_mean()}")
+        
+        
 
 
 

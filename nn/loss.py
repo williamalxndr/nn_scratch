@@ -23,12 +23,12 @@ class Loss:
         """
         return self.grad
     
-    def get_mean(self):
+    def get_mean(self) -> float:
         """
         Returns the mean of the loss.
 
         """
-        return np.mean(self.value)
+        return np.mean(self.value).item()
     
     def get_value(self):
         """
