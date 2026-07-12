@@ -1,10 +1,22 @@
 import numpy as np
+from abc import ABC, abstractmethod
 
-class Layer:
+class Log(ABC):
+    def __init__(self, verbose=True):
+        self.verbose = verbose
+
+    def log(self, msg, force=False):
+        if self.verbose:
+            print(msg)
+        elif force:
+            print(msg)
+
+
+class Layer(Log, ABC):
     def __init__(self, input_size, output_size, verbose=False):
+        super().__init__(verbose)
         self.input_size = input_size
         self.output_size = output_size
-        self.verbose=verbose
 
     def forward(self, x: np.ndarray) -> np.ndarray: 
         """
@@ -17,7 +29,7 @@ class Layer:
             y: the output data that gets forwarded
                 np.ndarray with shape (batch_size, output_size)
         """
-        raise NotImplementedError
+        raise NotImplementedError()
     
     def backward(self, grad_out: np.ndarray) -> np.ndarray: 
         """
@@ -28,56 +40,17 @@ class Layer:
         Returns:
             grad: The gradient of the loss w.r.t the input of this layer (x). dL/dx
         """
-        raise NotImplementedError
+        raise NotImplementedError()
     
     def __call__(self, x):
-        return self.forward(x)
-    
-    def log(self, msg, force=False):
-        if self.verbose:
-            print(msg)
-        elif force:
-            print(msg)
+        """
+        Returns the output of the layer
 
-    
-class Optimizer:
-    def __init__(self, params, lr, verbose=False):
-        """
-        Initialize parameter
         Args:
-            params: dict of theta and dtheta
-        """
-        self.params = params
-        self.lr = lr
-        self.verbose=verbose
-
-    def step(self, theta: dict, dtheta: dict):
-        """
-        Returns the update for theta
-        Args:
-            theta: dict of np.ndarray
-                    dictionary containing the thetas to be optimized.
-                    Example:
-                    {}
-            dtheta: dict of np.ndarray
-                    dictionary containing the dthetas corresponding with the theta.
-                    Each must be the same shape as theta
+            x: the input data to be forwarded
+                np.ndarray with shape (batch_size, input_size)
         Returns:
-            theta: np.ndarray with the same shape as the input
-                    theta after optimized 
-        
-        Modify:
-            theta
-        
-        For example,
-        SGD:
-        theta_t+1 <-- theta_t - lr * dtheta
-        returns theta_t+1
+            y: the output data that gets forwarded
+                np.ndarray with shape (batch_size, output_size)
         """
-        raise NotImplementedError
-    
-    def log(self, msg, force=False):
-        if self.verbose:
-            print(msg)
-        elif force:
-            print(msg)
+        return self.forward(x)

@@ -1,10 +1,10 @@
 import numpy as np
 from nn import Layer, Optimizer
 from nn.loss import *
-from nn.optimizer import *
+from nn.optim import *
 
 class Linear(Layer):
-    def __init__(self, input_size, output_size, lr=1e-5, optimizer=GradientDescent, init="xavier"):
+    def __init__(self, input_size, output_size, lr=1e-5, init="xavier"):
         """
         Initialize a linear layer
         """
@@ -24,11 +24,6 @@ class Linear(Layer):
             self.b = np.random.randn(1, output_size)                  # Bias shape = 1 x output_size
         else:
             raise ValueError("unknown initializer")
-
-        # Weights and bias optimizer
-        # TODO [REFACTOR]: Refactor optimizer so it can optimize
-        self.w_optimizer = optimizer()
-        self.b_optimizer = optimizer()
 
         # Batch size training
         self.batch_size = None
@@ -59,7 +54,6 @@ class Linear(Layer):
             g = g * (max_norm / norm)
         return g
     
-
     def forward(self, x: np.ndarray):
         """
         Perform the forward pass: z = Wx + b.
@@ -89,7 +83,6 @@ class Linear(Layer):
 
         z = (x @ self.w.T) + self.b
         return z
-
 
     def backward(self, grad_out: np.ndarray) -> np.ndarray :
         """
@@ -140,8 +133,6 @@ class Linear(Layer):
         self.dw = self._clip_grad_norm(self.dw)
         self.db = self._clip_grad_norm(self.db)
 
-        self._optimize()
-
         dx = grad_out @ self.w
 
         self.log("Backwarding complete!")
@@ -149,52 +140,7 @@ class Linear(Layer):
         
         return dx
     
-    def _optimize(self):
-        """
-        Optimize the weights and bias
-        """
-        self.log("Optimizing...")
-        self.log("\n")
-
-        self.w = self.w_optimizer.optimize(self.w, self.dw) # self.w shape: (output_size, input_size)
-        self.b = self.b_optimizer.optimize(self.b, self.db) # self.b shape: (1, output_size)
-
-        self.log("Optimizing complete!")
-        self.log("=================================")
-
-
-    def set_optimizer(self, optimizer):
-        """
-        Set the optimizer used for updating weights and biases.
-
-        Args:
-            optimizer: Optimizer class/instance (e.g. Adam, SGD) or a string
-                    identifier (e.g. "adam", "sgd").
-
-        Modifies:
-            self.w_optimizer: Optimizer, set to be the desired optimizer
-            self.b_optimizer: Optimizer, set to be the desired optimizer
-
-        Example:
-
-            # Using string
-            layer = Linear(3, 5)
-            layer.set_optimizer("adam")
-
-            # Using optimizer class
-            from optimizer import Adam
-            layer = Linear(3, 5)
-            layer.set_optimizer(Adam)
-        """
-        builder = OptimizerBuilder()
-        if isinstance(optimizer, Optimizer):
-            self.w_optimizer = optimizer()
-            self.b_optimizer = optimizer()
-
-        elif isinstance(optimizer, str):
-            self.w_optimizer = builder.build(optimizer)
-            self.b_optimizer = builder.build(optimizer)
-
+    # Helper methods
     def set_batch_size(self, batch_size):
         self.batch_size = batch_size
 

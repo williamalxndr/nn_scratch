@@ -2,7 +2,7 @@ import numpy as np
 from nn import Layer
 from nn.loss import *
 from nn.linear import Linear
-from nn.optimizer import *
+from nn.optim import *
 from argparse import ArgumentParser
 
 
@@ -146,4 +146,3 @@ if __name__ == "__main__":
     y_true = np.random.randn(args.batch_size, args.output_size)
 
     net.train(x, y_true)
-
