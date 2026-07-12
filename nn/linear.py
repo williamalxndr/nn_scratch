@@ -1,5 +1,5 @@
 import numpy as np
-from nn import Layer, Optimizer
+from nn import Layer
 from nn.loss import *
 from nn.optim import *
 
@@ -27,32 +27,18 @@ class Linear(Layer):
 
         # Batch size training
         self.batch_size = None
-
-    def _xavier_init(self, dist="uniform"):
-        if dist == "uniform":
-            num = np.sqrt(6/(self.input_size+self.output_size))
-            self.w = np.random.uniform(-num, num, (self.output_size, self.input_size))
-            self.b = np.zeros((1, self.output_size))
-        elif dist == "normal":
-            num = np.sqrt(2/(self.input_size, self.output_size))
-            self.w = np.random.normal(0, num, size=(self.output_size, self.input_size))
-            self.b = np.zeros((1, self.output_size))
-
-
-    def _he_init(self, dist="uniform"):
-        var_w = np.sqrt(2/self.input_size)
-        if dist == "uniform": 
-            bound = np.sqrt(6/self.input_size)
-            self.w = np.random.uniform(-bound, bound, (self.output_size, self.input_size))
-        elif dist == "normal":
-            self.w = np.random.normal(0, var_w, (self.output_size, self.input_size))
-        self.b = np.zeros((1, self.output_size))
-
-    def _clip_grad_norm(self, g:np.ndarray, max_norm=1):
-        norm = np.sqrt(np.sum(np.square(g)))
-        if norm > max_norm:
-            g = g * (max_norm / norm)
-        return g
+    
+    def parameters(self):
+        return {
+            id(self.w): self.w,
+            id(self.b): self.b
+        }
+        
+    def grads(self):
+        return {
+            id(self.w): self.dw,
+            id(self.b): self.db
+        }
     
     def forward(self, x: np.ndarray):
         """
@@ -140,27 +126,51 @@ class Linear(Layer):
         
         return dx
     
-    # Helper methods
+    # ========= Helper methods =========
+    
     def set_batch_size(self, batch_size):
         self.batch_size = batch_size
+
+    def _xavier_init(self, dist="uniform"):
+        if dist == "uniform":
+            num = np.sqrt(6/(self.input_size+self.output_size))
+            self.w = np.random.uniform(-num, num, (self.output_size, self.input_size))
+            self.b = np.zeros((1, self.output_size))
+        elif dist == "normal":
+            num = np.sqrt(2/(self.input_size, self.output_size))
+            self.w = np.random.normal(0, num, size=(self.output_size, self.input_size))
+            self.b = np.zeros((1, self.output_size))
+
+    def _he_init(self, dist="uniform"):
+        var_w = np.sqrt(2/self.input_size)
+        if dist == "uniform": 
+            bound = np.sqrt(6/self.input_size)
+            self.w = np.random.uniform(-bound, bound, (self.output_size, self.input_size))
+        elif dist == "normal":
+            self.w = np.random.normal(0, var_w, (self.output_size, self.input_size))
+        self.b = np.zeros((1, self.output_size))
+
+    def _clip_grad_norm(self, g:np.ndarray, max_norm=1):
+        norm = np.sqrt(np.sum(np.square(g)))
+        if norm > max_norm:
+            g = g * (max_norm / norm)
+        return g
+
 
 
 
 
 if __name__ == "__main__":
-    model_debug = Linear(3, 5)
+    model = Linear(3, 5)
 
     x = np.random.randn(1, 3)
     y_true = np.random.randn(1, 5)
 
-    optimizer = "Gradient descent"
+    optimizer = Adam(model)
 
-    y = model_debug.forward(x)
-    loss = mse(y, y_true)
-
-    print(f"Loss: {loss}")
-    model_debug.backward(loss.backward())
-
+    y = model.forward(x)
+    
+    
 
 
 

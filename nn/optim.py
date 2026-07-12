@@ -2,41 +2,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
 
-from nn import Log
+from nn import Log, Layer
 
 
 class Optimizer(Log, ABC):
-    def __init__(self, *params, lr: float = 0.01, verbose=False):
-        """
-        Initialize optimizer
-        Args:
-            *params: parameters to be optimized OR tuples of the parameters (np.ndarray) to be optimized
-        """
+    def __init__(self, *layers, lr=0.01, verbose=False):
         super().__init__(verbose)
+        if not all(isinstance(layer, Layer) for layer in layers):
+            raise ValueError("layers should be Layer")
+        self.layers = layers
+        self.lr = lr
+        
+        self.params = {}
+        for layer in self.layers:
+            self.params.update(layer.parameters())
+        
+        self.lr = lr
 
-        if len(params) == 1 and isinstance(params[0], dict):
-            self.params = params[0]
-        elif isinstance(params, tuple) and all(isinstance(param, np.ndarray) for param in params):
-            self.params = {
-                id(param): param for param in params
-            }
-        else:
-            raise ValueError(f"unexpected params type! Expected: dict[int, np.ndarray] or tuple[np.ndarray], got: {type(params)}")
-        self.lr: float = lr
-
-    def step(self, gts):
-        """
-        Args:
-            gts: dict of np.ndarray
-                 gradients keyed by the same ids as self.params.
-                 Each must be the same shape as the corresponding theta.
-        """
-        for id_, gt in gts.items():
-            if id_ not in self.params.keys():
-                raise KeyError(f"No id {id_} in params")
-
-            self.update_params(id_, gt)
-
+    def step(self):
+        for layer in self.layers:
+            for id_, gt in layer.grads().items():
+                if id_ not in self.params:
+                    raise KeyError(f"No id {id_} in params")
+                self.update_params(id_, gt)
+            
     @abstractmethod
     def update_params(self, id_, gt):
         raise NotImplementedError("Not implemented in base class")
@@ -47,8 +36,8 @@ class Optimizer(Log, ABC):
 
 
 class GradientDescent(Optimizer):
-    def __init__(self, *params, lr=0.01, verbose=False):
-        super().__init__(*params, lr=lr, verbose=verbose)
+    def __init__(self, *layers, lr=0.01, verbose=False):
+        super().__init__(*layers, lr=lr, verbose=verbose)
 
     def update_params(self, id_, gt):
         theta = self.params.get(id_)
@@ -56,8 +45,8 @@ class GradientDescent(Optimizer):
 
 
 class Momentum(Optimizer):
-    def __init__(self, *params, lr=0.01, gamma=0.01):
-        super().__init__(*params, lr=lr)
+    def __init__(self, *layers, lr=0.01, gamma=0.01):
+        super().__init__(*layers, lr=lr)
         self.gamma = gamma
         self.vt = {id_: 0 for id_ in self.params.keys()}
 
@@ -68,8 +57,8 @@ class Momentum(Optimizer):
 
 
 class AdaGrad(Optimizer):
-    def __init__(self, *params, lr=0.5, epsilon=1e-4):
-        super().__init__(*params, lr=lr)
+    def __init__(self, *layers, lr=0.5, epsilon=1e-4):
+        super().__init__(*layers, lr=lr)
         self.epsilon = epsilon
         self.vt = {id_: 0 for id_ in self.params.keys()}
 
@@ -80,8 +69,8 @@ class AdaGrad(Optimizer):
 
 
 class RMSProp(Optimizer):
-    def __init__(self, *params, lr=0.01, gamma=0.99, epsilon=1e-8):
-        super().__init__(*params, lr=lr)
+    def __init__(self, *layers, lr=0.01, gamma=0.99, epsilon=1e-8):
+        super().__init__(*layers, lr=lr)
         self.gamma = gamma
         self.epsilon = epsilon
         self.vt = {id_: 0 for id_ in self.params.keys()}
@@ -93,8 +82,8 @@ class RMSProp(Optimizer):
 
 
 class Adam(Optimizer):
-    def __init__(self, *params, lr=0.5, epsilon=1e-8, beta_1=0.9, beta_2=0.999):
-        super().__init__(*params, lr=lr)
+    def __init__(self, *layers, lr=0.5, epsilon=1e-8, beta_1=0.9, beta_2=0.999):
+        super().__init__(*layers, lr=lr)
         self.epsilon = epsilon
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -117,39 +106,42 @@ class Adam(Optimizer):
 
 
 if __name__ == "__main__":
-    target_w = 1_000
-    target_b = 1_000
+    target_w1 = 634
+    target_w2 = 1259
+    target_b = 194
 
     x = np.random.randn(100)
-    y = target_w * x + np.random.randn(100) * 0.1 + target_b
+    y = target_w1 * (x**2) + target_w2 * x + np.random.randn(100) * 0.1 + target_b
 
-    # w is the learnable parameter
-    w = np.random.randn(1)
+    # learnable parameter
+    w1 = np.random.randn(1)
+    w2 = np.random.randn(1)
     b = np.random.randn(1)
 
     optimizer = Adam({
-        id(w): w,
+        id(w1): w1,
+        id(w2): w2,
         id(b): b
     })
     
     for step_i in range(10_000):
-        y_pred = w * x + b
+        y_pred = w1 * x**2 + w2 * x + b
         error = y_pred - y
         loss = np.mean(error ** 2)
         
-        grad_w = np.mean(2 * error * x)
-        grad_w = np.array([grad_w])    
+        grad_w1 = np.array([np.mean(2 * error * (x**2))])
+        grad_w2 = np.array([np.mean(2 * error * x )])
+        grad_b = np.array([np.mean(2 * error)])
         
-        grad_b = np.mean(2 * error)
-        grad_b = np.array([grad_b])
         
         optimizer.step(
             {
-                id(w): grad_w,
+                id(w1): grad_w1,
+                id(w2): grad_w2,
                 id(b): grad_b
              }
             )
 
         if step_i % 20 == 0:
-            print(f"step {step_i:3d} | loss: {loss:.6f} | w: {w[0]:.4f} | b: {b[0]:.4f}")
+            print(f"step {step_i:3d} | loss: {loss:.6f} | w1: {w1[0]:.4f} | w2: {w2[0]:.4f} | b: {b[0]:.04f}")
 

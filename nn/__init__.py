@@ -17,6 +17,12 @@ class Layer(Log, ABC):
         super().__init__(verbose)
         self.input_size = input_size
         self.output_size = output_size
+        
+    def parameters(self):
+        raise NotImplementedError()
+    
+    def grads(self):
+        raise NotImplementedError()
 
     def forward(self, x: np.ndarray) -> np.ndarray: 
         """

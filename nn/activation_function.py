@@ -13,7 +13,7 @@ class ActivationFunction(Layer):
         Returns:
             sigmoid(x): np.ndarray 
         """
-        raise NotImplementedError
+        raise NotImplementedError("Not implemeted in base class")
     
     def backward(self, grad_out: np.ndarray):
         """
@@ -26,7 +26,7 @@ class ActivationFunction(Layer):
             grad: The gradient of the loss w.r.t the input, dL/dx
                     np.ndarray with shape (batch_size, size)
         """
-        raise NotImplementedError
+        raise NotImplementedError("Not implemented in base class")
 
 
 class Sigmoid(ActivationFunction):
