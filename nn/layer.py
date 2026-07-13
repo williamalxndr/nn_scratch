@@ -138,7 +138,7 @@ class Linear(Layer):
 
         # Backwarding, computing gradient
         # dL/dw = dL/dz * dz/dw
-        self.dw = grad_out.T @ self.x
+        self.dw = (grad_out.T @ self.x) / self.x.shape[0]
         self.db = np.mean(grad_out, axis=0).reshape(-1, 1).T
 
         # Gradient clipping

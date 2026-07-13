@@ -7,16 +7,16 @@ import numpy as np
 if __name__ == "__main__":
     net = Network(
         Linear(input_size=4, output_size=32, init="xavier"),
-        Sigmoid(),
-        Linear(input_size=32, output_size=256, init="xavier"),
-        Sigmoid(),
-        Linear(input_size=256, output_size=4, init="xavier"),
+        ReLU(),
+        Linear(input_size=32, output_size=64, init="xavier"),
+        ReLU(),
+        Linear(input_size=64, output_size=4, init="xavier"),
     )
     loss_fn = MSE()
     optimizer = Adam(net, lr=1e-2)
 
-    x = np.random.randn(100, 4)
-    y = 41.23 * x ** 3 + 312.459 * x ** 2 + 59.145 * x 
+    x = np.random.randn(10, 4)
+    y = 41 * x ** 3 + 23 * x ** 2 + 59 * x 
 
     for epoch in range(99999):
         y_pred = net(x)

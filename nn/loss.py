@@ -32,6 +32,7 @@ class LossLayer(Layer):
                 f"y_true's shape: {y_true.shape}"
             )
         loss_value, grad_out = self._compute(y_pred, y_true)
+        self.value = loss_value
         self._grad = grad_out
         return loss_value
 
@@ -50,7 +51,7 @@ class LossLayer(Layer):
 
     def get_mean(self) -> float:
         """Returns the mean of the loss over the batch."""
-        return np.mean(self._grad is not None and self.value).item()
+        return np.mean(self.value).item()
 
 
 class MSE(LossLayer):

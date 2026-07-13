@@ -37,27 +37,10 @@ class ActivationFunction(Layer):
 
 class Sigmoid(ActivationFunction):        
     def forward(self, x:np.ndarray):
-        """
-        Args:
-            x: the input data
-                np.ndarray with shape (batch_size, size)
-        Returns:
-            sigmoid(x): np.ndarray 
-        """
         self.x = x
         return self._calculate_sigmoid()
     
     def backward(self, grad_out):
-        """
-        Calculate the gradient of the loss w.r.t x
-        Args: 
-            grad_out: The gradient of the loss w.r.t the output, dL/dy
-                        np.ndarray with shape (batch_size, size)
-        
-        Returns:
-            grad: The gradient of the loss w.r.t the input, dL/dx
-                    np.ndarray with shape (batch_size, size)
-        """
         grad = self._calculate_sigmoid() * (1 - self._calculate_sigmoid())
         return grad_out * grad
 
@@ -77,9 +60,13 @@ class ReLU(ActivationFunction):
 
 class Softmax(ActivationFunction):
     def forward(self, x):
-        sft = np.exp(x) / np.sum(np.exp(x))
-        return sft
-    
+        x_shifted = x - np.max(x, axis=1, keepdims=True)
+        exp_x = np.exp(x_shifted)
+        self.s = exp_x / np.sum(exp_x, axis=1, keepdims=True)
+        return self.s
+
     def backward(self, grad_out):
-        # TODO: Implement
-        pass
+        s = self.s
+        dot = np.sum(grad_out * s, axis=1, keepdims=True)
+        dx = s * (grad_out - dot)
+        return dx
