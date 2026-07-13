@@ -70,38 +70,7 @@ class Linear(Layer):
         z = (x @ self.w.T) + self.b
         return z
 
-    def backward(self, grad_out: np.ndarray) -> np.ndarray :
-        """
-        Perform a backward pass through the linear layer.
-
-        Computes gradients with respect to weights, biases, and input,
-        then updates weights and biases using the configured optimizer.
-
-        Args:
-            grad_out: Gradient of the loss w.r.t. this layer's output (dL/dz),
-                    np.ndarray with shape (batch_size, output_size).
-
-        Returns:
-            dL/dx: Gradient of the loss w.r.t. the input, to be passed to
-                the previous layer. 
-                np.ndarray with shape: (batch_size, input_size)
-        
-        Modifies:
-            self.dw: 
-                dL/dw, np.ndarray with shape: (output_size, input_size)
-            self.db: 
-                dL/db, np.ndarray with shape: (1, output_size)
-
-        Notes:
-            Given z = Wx + b, gradients are derived as:
-
-                dL/dW = dL/dz * x
-                dL/db = dL/dz
-                dL/dx = dL/dz * W  ← returned
-        """
-        self.log("Backwarding...")
-        self.log("\n")
-
+    def backward(self, grad_out: np.ndarray) -> np.ndarray:
         # Argument validation
         if not isinstance(grad_out, np.ndarray):
             raise TypeError("grad_out should be np.ndarray")

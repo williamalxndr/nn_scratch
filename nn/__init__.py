@@ -18,9 +18,11 @@ class Layer(Log, ABC):
         self.input_size = input_size
         self.output_size = output_size
         
+    @abstractmethod
     def parameters(self):
         raise NotImplementedError()
     
+    @abstractmethod
     def grads(self):
         raise NotImplementedError()
 
