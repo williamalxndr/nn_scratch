@@ -95,18 +95,3 @@ class Softmax(ActivationFunction):
     def backward(self, grad_out):
         # TODO: Implement
         pass
-        
-class ActivationFunctionBuilder:
-    def __init__(self):
-        pass
-
-    def build(self, type, size) -> ActivationFunction:
-        if type.lower() == "sigmoid":
-            return Sigmoid(size)
-        elif type.lower() == "relu":
-            return ReLU(size)
-        elif type.lower() == "softmax":
-            return Softmax(size)
-        else:
-            raise ValueError(f"{type} has not been implemented yet")
-        
