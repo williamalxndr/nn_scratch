@@ -163,7 +163,7 @@ class Linear(Layer):
             self.w = np.random.uniform(-num, num, (self.output_size, self.input_size))
             self.b = np.zeros((1, self.output_size))
         elif dist == "normal":
-            num = np.sqrt(2/(self.input_size, self.output_size))
+            num = np.sqrt(2/(self.input_size+self.output_size))
             self.w = np.random.normal(0, num, size=(self.output_size, self.input_size))
             self.b = np.zeros((1, self.output_size))
 
