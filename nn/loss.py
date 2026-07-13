@@ -40,10 +40,13 @@ class LossLayer(Layer):
         return self._grad
 
     def parameters(self):
-        return []
+        return {}
 
     def grads(self):
-        return []
+        return {}
+    
+    def __call__(self, y_pred, y_true):
+        return self.forward(y_pred, y_true)
 
     def get_mean(self) -> float:
         """Returns the mean of the loss over the batch."""

@@ -1,10 +1,18 @@
 import numpy as np
 from nn import Layer
+from abc import ABC, abstractmethod
 
 class ActivationFunction(Layer):
-    def __init__(self, size):
+    def __init__(self, size=None):
         super().__init__(size, size)
+        
+    def parameters(self):
+        return {}
 
+    def grads(self):
+        return {}
+
+    @abstractmethod
     def forward(self, x: np.ndarray):
         """
         Args:
@@ -15,6 +23,7 @@ class ActivationFunction(Layer):
         """
         raise NotImplementedError("Not implemeted in base class")
     
+    @abstractmethod
     def backward(self, grad_out: np.ndarray):
         """
         Calculate the gradient of the loss w.r.t x
@@ -30,7 +39,7 @@ class ActivationFunction(Layer):
 
 
 class Sigmoid(ActivationFunction):
-    def __init__(self, size):
+    def __init__(self, size=None):
         super().__init__(size)
 
     def forward(self, x:np.ndarray):
@@ -63,7 +72,7 @@ class Sigmoid(ActivationFunction):
 
 
 class ReLU(ActivationFunction):
-    def __init__(self, size):
+    def __init__(self, size=None):
         super().__init__(size)
 
     def forward(self, x):
@@ -76,7 +85,7 @@ class ReLU(ActivationFunction):
 
 
 class Softmax(ActivationFunction):
-    def __init__(self, size):
+    def __init__(self, size=None):
         super().__init__(size)
 
     def forward(self, x):
