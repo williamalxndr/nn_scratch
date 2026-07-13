@@ -2,10 +2,7 @@ import numpy as np
 from nn import Layer
 from abc import ABC, abstractmethod
 
-class ActivationFunction(Layer):
-    def __init__(self, size=None):
-        super().__init__(size, size)
-        
+class ActivationFunction(Layer):        
     def parameters(self):
         return {}
 
@@ -38,10 +35,7 @@ class ActivationFunction(Layer):
         raise NotImplementedError("Not implemented in base class")
 
 
-class Sigmoid(ActivationFunction):
-    def __init__(self, size=None):
-        super().__init__(size)
-
+class Sigmoid(ActivationFunction):        
     def forward(self, x:np.ndarray):
         """
         Args:
@@ -72,9 +66,6 @@ class Sigmoid(ActivationFunction):
 
 
 class ReLU(ActivationFunction):
-    def __init__(self, size=None):
-        super().__init__(size)
-
     def forward(self, x):
         self.x = x
         return np.maximum(np.zeros_like(x), x)
@@ -85,9 +76,6 @@ class ReLU(ActivationFunction):
 
 
 class Softmax(ActivationFunction):
-    def __init__(self, size=None):
-        super().__init__(size)
-
     def forward(self, x):
         sft = np.exp(x) / np.sum(np.exp(x))
         return sft

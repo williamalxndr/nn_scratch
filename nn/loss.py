@@ -9,7 +9,7 @@ class LossLayer(Layer):
     """Base class for losses as terminal layers in the network."""
 
     def __init__(self, verbose=False):
-        super().__init__(input_size=None, output_size=None, verbose=verbose)
+        super().__init__(verbose=verbose)
         self._grad = None
 
     @abstractmethod
